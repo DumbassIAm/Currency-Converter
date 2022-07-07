@@ -1,0 +1,115 @@
+html,
+body {
+	padding: 0;
+	margin: 0;
+	font-weight: 400;
+	font-size: 10px;
+}
+
+html.lock {
+	overflow: hidden;
+
+	body {
+		overflow: hidden;
+	}
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	min-height: 100vh;
+
+	&.hide-overflow {
+		position: fixed;
+		width: 100%;
+	}
+
+	.footer {
+		margin-top: auto;
+	}
+}
+
+.container {
+	margin: 0 auto;
+	max-width: 1200px;
+
+	@media screen and (min-width: 1440px) {
+		max-width: 1280px;
+	}
+
+	@media screen and (max-width: 1279px) {
+		max-width: 1000px;
+	}
+
+	@media screen and (max-width: 1023px) {
+		max-width: 720px;
+	}
+
+	@media screen and (max-width: 767px) {
+		max-width: 540px;
+	}
+
+	@media screen and (max-width: 575px) {
+		padding-left: 20px;
+		padding-right: 20px;
+		max-width: 100%;
+		width: 100%;
+	}
+}
+
+*,
+*::after,
+*::before {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+textarea,
+input,
+select,
+button,
+label {
+	font: inherit;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+textarea {
+	appearance: none;
+}
+
+button {
+	cursor: pointer;
+
+	&[disabled] {
+		cursor: initial;
+	}
+}
+
+input,
+button,
+textarea,
+select,
+textarea:focus,
+textarea:active,
+input:active,
+input:focus,
+button:active,
+button:focus,
+select:active,
+select:focus {
+	outline: 0;
+}
+
+.visually-hidden {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	font-size: 1px;
+	overflow: hidden;
+}

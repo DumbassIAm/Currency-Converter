@@ -1,0 +1,37 @@
+@mixin flex($vertical-align: false,
+    $horizontal-align: false,
+    $gap-row: false,
+    $gap-column: false,
+    $wrap: false,
+    $flex-direction: false,
+) {
+    display: flex;
+
+    @if $vertical-align {
+        align-items: $vertical-align;
+    }
+
+    @if $horizontal-align {
+        justify-content: $horizontal-align;
+    }
+
+    @if $gap-row and $gap-column {
+        grid-gap: $gap-row $gap-column;
+    }
+
+    @else if $gap-column {
+        grid-column-gap: $gap-column;
+    }
+
+    @else if $gap-row {
+        grid-row-gap: $gap-row;
+    }
+
+    @if $wrap {
+        flex-wrap: $wrap;
+    }
+
+    @if $flex-direction {
+        flex-direction: $flex-direction;
+    }
+}
