@@ -1,21 +1,18 @@
-// COLORS
 @import "variables/colors";
-// TYPOGRAPHY
+
 @import "typography/text";
-// COMMON STYLES AND RESETS
+
 @import "common";
 
 // UTILITY
 // mixins
 @import "utility/mixins/flex";
 
-// PARTS
-
-
 // COMPONENTS
-// buttons
 @import "components/buttons";
-
+@import "components/currency-converter";
+@import "components/fields/fields";
+@import "components/select-component";
 
 // PAGES
 // main page

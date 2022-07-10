@@ -1,0 +1,82 @@
+.select {
+    position: relative;
+    font-size: 16px;
+
+    &.opened {
+        .select__active-block {
+            background-image: url(../images/icons/arrow-up-blue.svg);
+            border-color: $main-blue;
+        }
+
+        .select__dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+    &__active-block {
+        @include flex(center);
+        padding: 10px;
+        height: 50px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background-color: $white;
+        background-repeat: no-repeat;
+        background-position: calc(100% - 10px) center;
+        background-size: 20px;
+        background-image: url(../images/icons/arrow-down-grey.svg);
+        transition: border-color .2s linear;
+
+        &__text {
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    }
+
+    &__dropdown {
+        position: absolute;
+        left: 0;
+        top: calc(100% + 6px);
+        max-height: 250px;
+        overflow-y: auto;
+        width: 100%;
+        // border: 1px solid #DFE3F7;
+        box-shadow: 0px 0px 16px rgba(40, 88, 255, 0.08);
+        border-radius: 4px;
+        background-color: #ffffff;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .2s linear, visibility .2s linear;
+
+        &__item {
+            padding: 0;
+
+            @media (hover) {
+                &:hover {
+                    background-color: $light-blue;
+
+                    .select__dropdown__item__text {
+                        color: $main-blue;
+                    }
+                }
+            }
+
+            &:not(:last-child) {
+                .select__dropdown__item__text {
+                    border-bottom: 1px solid #DFE3F7;
+                }
+            }
+
+            &_active {
+                .select__dropdown__item__text {
+                    background: url(../images/icons/check.svg) no-repeat left center / 1.15em;
+                }
+            }
+
+            &__text {
+                padding: 10px 15px 10px 28px;
+            }
+        }
+    }
+}

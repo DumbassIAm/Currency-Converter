@@ -1,0 +1,45 @@
+.cc {
+    padding: 30px;
+    width: 500px;
+    border-radius: 20px;
+    background-color: rgba($white, 0.7);
+
+
+    &__row {
+        @include flex(center, false, false, 20px);
+
+        &:not(:last-child) {
+            margin-bottom: 20px;
+        }
+    }
+
+    &__field {
+        flex-grow: 1;
+    }
+
+    .currency-info-row {
+        margin-bottom: 60px;
+    }
+
+    &__info {
+        &-message {
+            font-family: "Montserrat", sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+
+            &__title {
+                margin-bottom: 5px;
+            }
+        }
+    }
+
+    &__total {
+        font-family: "Montserrat", sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+
+        &__title {
+            margin-bottom: 5px;
+        }
+    }
+}

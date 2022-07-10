@@ -15,6 +15,7 @@ html.lock {
 }
 
 body {
+	font-family: "Montserrat", sans-serif;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
@@ -27,34 +28,6 @@ body {
 
 	.footer {
 		margin-top: auto;
-	}
-}
-
-.container {
-	margin: 0 auto;
-	max-width: 1200px;
-
-	@media screen and (min-width: 1440px) {
-		max-width: 1280px;
-	}
-
-	@media screen and (max-width: 1279px) {
-		max-width: 1000px;
-	}
-
-	@media screen and (max-width: 1023px) {
-		max-width: 720px;
-	}
-
-	@media screen and (max-width: 767px) {
-		max-width: 540px;
-	}
-
-	@media screen and (max-width: 575px) {
-		padding-left: 20px;
-		padding-right: 20px;
-		max-width: 100%;
-		width: 100%;
 	}
 }
 
