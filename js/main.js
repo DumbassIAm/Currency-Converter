@@ -1,9 +1,9 @@
 // consts 
 const ALLOWED_CHARS = "1234567890.";
-const url = "https://api.apilayer.com/fixer/latest";
+const url = "https://v6.exchangerate-api.com/v6/";
+const apiKey = "d7f0da26ecc34fc4bcd13a48b6679ec2";
 
 // api
-const apiKey = "QXOiZa6whNCh1rwn4jtesm8eP12KgFN6";
 const baseCurs = new Map()
 baseCurs.set("ru-RU", "RUB");
 baseCurs.set("en-US", "USD");
@@ -246,7 +246,7 @@ class CurrencyConverter {
 
                 await this._getCurrencyData(newBaseCur);
 
-                this.targetCurrencySelect.update(this.state.currenciesData.rates)
+                this.targetCurrencySelect.update(this.state.currenciesData.conversion_rates)
 
                 this._setCurrentCurrencyData();
                 this._setCurrencyInfoMessage();
@@ -308,7 +308,7 @@ class CurrencyConverter {
     // init converter Selects
     _initSelects = () => {
         const copiedCur = {};
-        for (let key in this.state.currenciesData.rates) {
+        for (let key in this.state.currenciesData.conversion_rates) {
             copiedCur[key] = key;
         }
 
@@ -316,7 +316,7 @@ class CurrencyConverter {
             container: this.currencyConverter.querySelector(".base-currency-select"),
             selectData: {
                 data: copiedCur,
-                activeOption: this.state.currenciesData.base,
+                activeOption: this.state.currenciesData.base_code,
             }
         });
         this.baseCurrencySelectElement = this.currencyConverter.querySelector(".base-currency-select .select");
@@ -324,7 +324,7 @@ class CurrencyConverter {
         this.targetCurrencySelect = new Select({
             container: this.currencyConverter.querySelector(".target-currency-select"),
             selectData: {
-                data: this.state.currenciesData.rates,
+                data: this.state.currenciesData.conversion_rates,
             }
         });
         this.targetCurrencySelectElement = this.currencyConverter.querySelector(".target-currency-select .select");
@@ -360,7 +360,7 @@ class CurrencyConverter {
             headers: myHeaders
         };
 
-        const response = await fetch(`${url}?base=${baseCur}`, requestOptions)
+        const response = await fetch(`${url}/0ba7144aa2094c43003bc854/latest/${baseCur}`)
             .then(response => response.json())
             .then(result => this.state.currenciesData = result)
             .catch(error => console.log('error', error));
