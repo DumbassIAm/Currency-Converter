@@ -1,7 +1,21 @@
 // consts 
 const ALLOWED_CHARS = "1234567890.";
 const url = "https://v6.exchangerate-api.com/v6/";
-const apiKey = "d7f0da26ecc34fc4bcd13a48b6679ec2";
+const apiKey = "0ba7144aa2094c43003bc854";
+
+function debounce(callee, timeoutMs) {
+    return function perform(...args) {
+        let previousCall = this.lastCall;
+
+        this.lastCall = Date.now();
+
+        if (previousCall && this.lastCall - previousCall <= timeoutMs) {
+            clearTimeout(this.lastCallTimer);
+        }
+
+        this.lastCallTimer = setTimeout(() => callee(...args), timeoutMs);
+    };
+}
 
 // api
 const baseCurs = new Map()
@@ -75,6 +89,8 @@ class Select {
         })
 
         this.activeBlock.addEventListener("click", event => {
+            if (this.select.classList.contains("disabled")) return;
+
             this.select.classList.contains("opened") ? this.toggleOpened("close") : this.toggleOpened("open");
         });
 
@@ -162,7 +178,10 @@ class Select {
     _refresh = () => {
         const dropdownItems = Array.from(this.dropdown.querySelectorAll(`.select__dropdown__item`));
 
-        const newActiveOption = dropdownItems.find(item => item.textContent === this.activeOption.text);
+        const newActiveOption = dropdownItems.find(item => {
+            const formattedText = item.textContent.replace(/\n/g, "").trim();
+            return formattedText === this.activeOption.text;
+        });
 
         this._resetItems();
         this._setActiveItem(newActiveOption);
@@ -194,6 +213,13 @@ class Select {
         text: getElementDataset(this.select, "activeOptionText") ?? ""
     });
 
+    disable = value => {
+        if (value !== "enable" && value !== "disable") return;
+
+        const method = value === "disable" ? "add" : "remove";
+        this.select.classList[method]("disabled");
+    }
+
     reset = () => {
         this._setActiveItem();
     }
@@ -204,7 +230,7 @@ class CurrencyConverter {
         this.container = opts.container;
 
         this.state = {
-            currencyInputValue: "",
+            currencyInputValue: 0,
             configureData: {
                 apiKey: opts.configureData.apiKey,
             },
@@ -218,7 +244,7 @@ class CurrencyConverter {
     // init functions
     _init = async () => {
         this._configure();
-        await this._getCurrencyData();
+        await this._fetchCurrenices();
 
         this._createConverter();
         this.currencyConverter = this.container.querySelector(".cc");
@@ -226,38 +252,38 @@ class CurrencyConverter {
         this.currencyInput = this.currencyConverter.querySelector(".currency-input");
 
         this._initSelects();
-        this._setCurrentCurrencyData();
+        this._setCurrentCurrencyInfo();
 
         this.currencyInfo = this.currencyConverter.querySelector(".cc__info-message__rate");
         this._setCurrencyInfoMessage();
 
-        this.total = this.currencyConverter.querySelector(".cc__total__value");
-        this._setTotal(this.state.currencyInputValue)
+        this.totalElement = this.currencyConverter.querySelector(".cc__total__value");
+        const total = await this._calcTotal();
+        this._setTotal(total);
 
         this._bindEvents();
     }
 
     _bindEvents = () => {
-        this.currencyInput && this.currencyInput.addEventListener("input", this._handleCurrencyInput);
+        const debouncedHandleInput = debounce(this._handleCurrencyInput, 250);
+        this.currencyInput && this.currencyInput.addEventListener("input", debouncedHandleInput);
 
         this.baseCurrencySelectElement
             && this.baseCurrencySelectElement.addEventListener("itemChanged", async () => {
-                const newBaseCur = this.baseCurrencySelect.getValue().value;
-
-                await this._getCurrencyData(newBaseCur);
-
-                this.targetCurrencySelect.update(this.state.currenciesData.conversion_rates)
-
-                this._setCurrentCurrencyData();
+                this._setCurrentCurrencyInfo();
                 this._setCurrencyInfoMessage();
-                this._setTotal();
+
+                const total = await this._calcTotal();
+                this._setTotal(total);
             });
 
         this.targetCurrencySelectElement
-            && this.targetCurrencySelectElement.addEventListener("itemChanged", () => {
-                this._setCurrentCurrencyData();
+            && this.targetCurrencySelectElement.addEventListener("itemChanged", async () => {
+                this._setCurrentCurrencyInfo();
                 this._setCurrencyInfoMessage();
-                this._setTotal();
+
+                const total = await this._calcTotal();
+                this._setTotal(total);
             });
     }
 
@@ -267,12 +293,6 @@ class CurrencyConverter {
 
         const currencyConverter = `
         <div class="cc">
-            <div class="cc__row currency-info-row">
-                <div class="cc__info-message">
-                    <div class="cc__info-message__title">Current currency rate:</div>
-                    <div class="cc__info-message__rate"></div>
-                </div>
-            </div>
             <div class="cc__row">${currencyInput}</div>
             <div class="cc__row">
                 <div class="field cc__field">
@@ -287,7 +307,7 @@ class CurrencyConverter {
             <div class="cc__row currency-total-row">
                 <div class="cc__total">
                     <div class="cc__total__title">You get:</div>
-                    <div class="cc__total__value"></div>
+                    <span class="cc__total__value"></span>
                 </div>
             </div>
         </div>`;
@@ -300,7 +320,7 @@ class CurrencyConverter {
             <div class="field cc__field">
                 <div class="field__title">Fill amount you want:</div>
                 <div class="field__input-container">
-                    <input type="text" class="field__input currency-input" value="${this.state.currencyInputValue}">
+                    <input type="text" class="field__input currency-input" maxlength="20" value="${this.state.currencyInputValue}">
                 </div>
             </div>`;
     }
@@ -324,7 +344,8 @@ class CurrencyConverter {
         this.targetCurrencySelect = new Select({
             container: this.currencyConverter.querySelector(".target-currency-select"),
             selectData: {
-                data: this.state.currenciesData.conversion_rates,
+                data: copiedCur,
+                activeOption: Object.keys(copiedCur)[1]
             }
         });
         this.targetCurrencySelectElement = this.currencyConverter.querySelector(".target-currency-select .select");
@@ -336,43 +357,52 @@ class CurrencyConverter {
             = baseCurs.get(this.state.configureData.baseLang) || baseCurs.get("DEFAULT");
     }
 
-    _handleCurrencyInput = e => {
+    _handleCurrencyInput = async e => {
         const value = e.target.value;
-        const formattedValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+        if (!Number(value)) return;
 
-        this.state.currencyInputValue = formattedValue;
-
+        this.state.currencyInputValue = value || 0;
         this.currencyInput.value = this.state.currencyInputValue;
 
-        this._setTotal();
+        const total = await this._calcTotal();
+        this._setTotal(total);
     }
 
-    _getCurrencyData = async baseCurrency => {
+    _fetchCurrenices = async baseCurrency => {
         const apiKey = this.state.configureData.apiKey;
         const baseCur = baseCurrency ?? this.state.configureData.baseCurrency;
 
-        const myHeaders = new Headers();
-        myHeaders.append("apikey", apiKey);
-
-        const requestOptions = {
-            method: 'GET',
-            redirect: 'follow',
-            headers: myHeaders
-        };
-
-        const response = await fetch(`${url}/0ba7144aa2094c43003bc854/latest/${baseCur}`)
+        const response = await fetch(`${url}/${apiKey}/latest/${baseCur}`)
             .then(response => response.json())
-            .then(result => this.state.currenciesData = result)
+            .then(result => {
+                this.state.currenciesData = {
+                    base_code: result.base_code,
+                    conversion_rates: result.conversion_rates,
+                }
+
+                return this.state.currenciesData;
+            })
             .catch(error => console.log('error', error));
     }
 
-    _setCurrentCurrencyData = () => {
+    _fetchConversionRate = async () => {
+        const baseCurrencyName = this.state.currentCurrencyData.baseCurrencyName;
+        const targetCurrencyName = this.state.currentCurrencyData.targetCurrencyName;
+
+        const conversion_rate = await fetch(`${url}/${apiKey}/pair/${baseCurrencyName}/${targetCurrencyName}`)
+            .then(response => response.json())
+            .then(result => result.conversion_rate)
+            .catch(error => console.log('error', error));
+
+        return conversion_rate;
+    }
+
+    _setCurrentCurrencyInfo = () => {
         const baseCurrencyData = this.baseCurrencySelect.getValue();
         this.state.currentCurrencyData.baseCurrencyName = baseCurrencyData.value;
 
         const targetCurrencyData = this.targetCurrencySelect.getValue();
-        this.state.currentCurrencyData.targetCurrencyName = targetCurrencyData.text;
-        this.state.currentCurrencyData.targetCurrencyRate = targetCurrencyData.value;
+        this.state.currentCurrencyData.targetCurrencyName = targetCurrencyData.value;
     }
 
     _setCurrencyInfoMessage = () => {
@@ -390,16 +420,38 @@ class CurrencyConverter {
         writeText(this.currencyInfo, text);
     }
 
-    _setTotal = () => {
-        const rate = +this.state.currentCurrencyData.targetCurrencyRate;
-        const value = this.state.currencyInputValue;
+    _calcTotal = async () => {
+        this._disableSelects("disable");
+        this._setLoading("loading");
+
+        const rate = await this._fetchConversionRate();
+        const value = this.state.currencyInputValue || 0;
+
+        this._disableSelects("enable");
+        this._setLoading("finished");
 
         const total = value * rate;
-        const trimmedTotal = total.toFixed(3);
+        const trimmedTotal = total % 10 ? total.toFixed(3) : total;
 
+        return trimmedTotal;
+    }
+
+    _setTotal = total => {
         const targetCurrencyName = this.state.currentCurrencyData.targetCurrencyName;
 
-        writeText(this.total, `${trimmedTotal} ${targetCurrencyName}`)
+        writeText(this.totalElement, `${total} ${targetCurrencyName}`)
+    }
+
+    _disableSelects = disable => {
+        this.baseCurrencySelect.disable(disable);
+        this.targetCurrencySelect.disable(disable);
+    }
+
+    _setLoading = loading => {
+        if (loading !== "loading" && loading !== "finished") return;
+
+        const method = loading === "loading" ? "add" : "remove";
+        this.currencyConverter.classList[method]("loading");
     }
 }
 

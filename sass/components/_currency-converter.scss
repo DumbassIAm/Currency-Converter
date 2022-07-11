@@ -4,6 +4,12 @@
     border-radius: 20px;
     background-color: rgba($white, 0.7);
 
+    &.loading {
+        .cc__total__value {
+            padding-right: 25px;
+            background: url(../images/icons/loading.svg) no-repeat center right / 20px;
+        }
+    }
 
     &__row {
         @include flex(center, false, false, 20px);
@@ -21,21 +27,10 @@
         margin-bottom: 60px;
     }
 
-    &__info {
-        &-message {
-            font-family: "Montserrat", sans-serif;
-            font-size: 24px;
-            font-weight: 600;
-
-            &__title {
-                margin-bottom: 5px;
-            }
-        }
-    }
-
     &__total {
         font-family: "Montserrat", sans-serif;
         font-size: 16px;
+        line-height: 20px;
         font-weight: 600;
 
         &__title {

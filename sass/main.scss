@@ -1,7 +1,5 @@
 @import "variables/colors";
 
-@import "typography/text";
-
 @import "common";
 
 // UTILITY
@@ -9,7 +7,6 @@
 @import "utility/mixins/flex";
 
 // COMPONENTS
-@import "components/buttons";
 @import "components/currency-converter";
 @import "components/fields/fields";
 @import "components/select-component";

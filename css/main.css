@@ -99,6 +99,10 @@ select:focus {
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.7);
 }
+.cc.loading .cc__total__value {
+  padding-right: 25px;
+  background: url(../images/icons/loading.svg) no-repeat center right/20px;
+}
 .cc__row {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -119,17 +123,10 @@ select:focus {
 .cc .currency-info-row {
   margin-bottom: 60px;
 }
-.cc__info-message {
-  font-family: "Montserrat", sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-}
-.cc__info-message__title {
-  margin-bottom: 5px;
-}
 .cc__total {
   font-family: "Montserrat", sans-serif;
   font-size: 16px;
+  line-height: 20px;
   font-weight: 600;
 }
 .cc__total__title {
@@ -154,6 +151,13 @@ select:focus {
 .select {
   position: relative;
   font-size: 16px;
+  cursor: pointer;
+  -webkit-transition: opacity 0.2s linear;
+  transition: opacity 0.2s linear;
+}
+.select.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .select.opened .select__active-block {
   background-image: url(../images/icons/arrow-up-blue.svg);
